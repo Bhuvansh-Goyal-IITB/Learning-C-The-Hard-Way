@@ -6,29 +6,6 @@
 #define MAX_DATA 512
 #define MAX_ROWS 100
 
-/*
-prog <dbfile> <action> [action params]
-
-Db functions
-
-Db create
-Db set <- id name email
-Db get <- id
-Db list
-Db delete <- id
-
-Db write
-Db close
-Db open -> connection
-Db load
-
-c = create
-g = get
-s = set
-d = del
-l = list
-*/
-
 struct Address {
   int id;
   int set;
