@@ -144,6 +144,9 @@ void Database_write(struct Connection *conn) {
 
 void Database_load(struct Connection *conn) {
   int rc = fread(conn->db, sizeof(int) * 2, 1, conn->file);
+  if (rc != 1) {
+    die(conn, "Memory Error.");
+  }
 
   conn->db->rows = malloc(sizeof(struct Address) * conn->db->MAX_ROWS);
   if (!conn->db->rows) {
