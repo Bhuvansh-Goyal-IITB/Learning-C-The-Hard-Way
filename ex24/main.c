@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdio_ext.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "dbg.h"
 
@@ -23,6 +25,32 @@ typedef struct Person {
   char last_name[MAX_DATA];
 } Person;
 
+int process_string(char *s) {
+  char *cpy = malloc(sizeof(char) * MAX_DATA);
+  check_mem(cpy);
+
+  int start_index = 0;
+  for (; start_index < MAX_DATA; start_index++) {
+    if (s[start_index] != ' ') break;
+  }
+
+  for (int i = 0; start_index + i < MAX_DATA; i++) {
+    if (s[start_index + i] == '\n') {
+      cpy[i] = '\0';
+      break;
+    }
+
+    cpy[i] = s[start_index + i];
+  }
+
+  memcpy(s, cpy, MAX_DATA);
+  free(cpy);
+  return 1;
+error:
+  if (cpy) free(cpy);
+  return 0;
+}
+
 int main() {
   Person you;
 
@@ -37,9 +65,8 @@ int main() {
   if (in == NULL) printf("\n");
   check(in != NULL, "Failed to read first name.");
 
-  if (you.first_name[MAX_DATA - 1] == 0) {
-    you.first_name[MAX_DATA - 2] = '\n';
-  }
+  int rc = process_string(you.first_name);
+  check(rc == 1, "Failed to process string.");
 
   printf("What's your last name? ");
   in = fgets(you.last_name, MAX_DATA, stdin);
@@ -47,13 +74,12 @@ int main() {
   if (in == NULL) printf("\n");
   check(in != NULL, "Failed to read last name.");
 
-  if (you.last_name[MAX_DATA - 1] == 0) {
-    you.last_name[MAX_DATA - 2] = '\n';
-  }
+  rc = process_string(you.last_name);
+  check(rc == 1, "Failed to process string.");
 
   printf("How old are you? ");
 
-  int rc = fscanf(stdin, "%d", &you.age);
+  rc = fscanf(stdin, "%d", &you.age);
   check(rc > 0, "You have to enter a number.");
 
   printf("What color are your eyes:\n");
@@ -76,8 +102,8 @@ int main() {
   check(rc > 0, "Enter a floating point number.");
 
   printf("----- RESULTS -----\n");
-  printf("First Name: %s", you.first_name);
-  printf("Last Name: %s", you.last_name);
+  printf("First Name: %s\n", you.first_name);
+  printf("Last Name: %s\n", you.last_name);
   printf("Age: %d\n", you.age);
   printf("Eyes: %s\n", EYE_COLOR_NAMES[you.eyes]);
   printf("Income: %.2f\n", you.income);
