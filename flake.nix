@@ -13,6 +13,7 @@
         devShells = {
           default = pkgs.mkShell {
             buildInputs = with pkgs; [
+              valgrind
               clang-tools
               gcc
             ];
