@@ -12,11 +12,18 @@
     int size;                                                 \
     int capacity;                                             \
   } name;                                                     \
-  name create_##name() {                                      \
-    name v = {.arr = NULL, .size = 0, .capacity = 0};         \
-    return v;                                                 \
+  int create_##name(name **v) {                               \
+    *v = calloc(1, sizeof(name));                             \
+    check_mem(*v);                                            \
+    (*v)->arr = NULL;                                         \
+    (*v)->size = 0;                                           \
+    (*v)->capacity = 0;                                       \
+    return 0;                                                 \
+  error:                                                      \
+    if ((*v)->arr) free((*v)->arr);                           \
+    return -1;                                                \
   }                                                           \
-  void name##_push(name *v, type e) {                         \
+  int name##_push(name *v, type e) {                          \
     if (v->size == v->capacity) {                             \
       int old_capacity = v->capacity;                         \
       v->capacity = v->capacity == 0 ? 1 : 2 * v->capacity;   \
@@ -29,10 +36,10 @@
       v->arr = new_arr;                                       \
     }                                                         \
     v->arr[v->size++] = e;                                    \
-    return;                                                   \
+    return 0;                                                 \
   error:                                                      \
     if (v->arr) free(v->arr);                                 \
-    return;                                                   \
+    return -1;                                                \
   }                                                           \
   int name##_at(name *v, int i, type *result) {               \
     if (i >= v->size) {                                       \
