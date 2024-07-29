@@ -17,12 +17,13 @@ int main() {
   strcat(logfind_path, file);
 
   fp = fopen(logfind_path, "r");
-  check(fp != NULL, "Could'nt open ~/.logfind.");
+  check(fp != NULL, "Could'nt open %s", logfind_path);
 
   free(logfind_path);
   fclose(fp);
   return 0;
 error:
+  if (logfind_path) free(logfind_path);
   if (fp) fclose(fp);
   return 1;
 }
