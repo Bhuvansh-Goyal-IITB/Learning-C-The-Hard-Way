@@ -1,88 +1,62 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "../common/dbg.h"
+#include "file.h"
 #include "vector.h"
 
-VECTOR(char, string);
-VECTOR(string *, buffer);
-
-int load_config_file(FILE *fp, buffer *b) {
-  string *line;
-  int res = 0;
-
-  res = create_string(&line);
-
-  check(res == 0, "Failed to create string.");
-  while (!feof(fp)) {
-    char ch = fgetc(fp);
-    if (ch != '\n') {
-      res = string_push(line, ch);
-      check(res == 0, "Failed to push into string.");
-    } else {
-      res = buffer_push(b, line);
-      check(res == 0, "Failed to push into buffer.");
-      create_string(&line);
-      check(res == 0, "Failed to create string.");
-    }
-  }
-
-  if (line->arr) free(line->arr);
-  free(line);
-  return 0;
-error:
-  if (line->arr) free(line->arr);
-  free(line);
-  return -1;
-}
-
-void destroy_buffer(buffer *b) {
-  if (b == NULL) return;
-
-  for (int i = 0; i < b->size; i++) {
-    string *curr;
-    buffer_at(b, i, &curr);
-
-    if (curr->arr) free(curr->arr);
-    free(curr);
-  }
-
-  if (b->arr) free(b->arr);
-  free(b);
-}
-
-int main() {
-  FILE *fp = NULL;
-  int res = 0;
-
+int get_config_file_path(char **config_file_path) {
   const char *home_dir = getenv("HOME");
   const char *file = "/.logfind";
 
-  buffer *config_buffer;
-  res = create_buffer(&config_buffer);
-  check(res == 0, "Failed to create buffer.");
+  *config_file_path =
+      (char *)calloc(1, (strlen(home_dir) + strlen(file) + 1) * sizeof(char));
+  check_mem(config_file_path);
 
-  char *logfind_path =
-      calloc(1, (strlen(home_dir) + strlen(file) + 1) * sizeof(char));
-  check_mem(logfind_path);
+  strcpy(*config_file_path, home_dir);
+  strcat(*config_file_path, file);
 
-  strcpy(logfind_path, home_dir);
-  strcat(logfind_path, file);
-
-  fp = fopen(logfind_path, "r");
-  check(fp != NULL, "Could'nt open %s", logfind_path);
-
-  res = load_config_file(fp, config_buffer);
-  check(res == 0, "Failed to load %s", logfind_path);
-
-  destroy_buffer(config_buffer);
-  free(logfind_path);
-  fclose(fp);
   return 0;
 error:
-  destroy_buffer(config_buffer);
-  if (logfind_path) free(logfind_path);
-  if (fp) fclose(fp);
+  return -1;
+}
+
+int main(int argc, char *argv[]) {
+  if (argc < 2) {
+    log_err("USAGE: %s [-o for or logic] [search vcs]", argv[0]);
+    return 1;
+  }
+
+  int res = 0;
+
+  vvc *config_buffer = NULL;
+  char *config_file_path = NULL;
+
+  res = create_vvc(&config_buffer);
+  check(res == 0, "Failed to create config buffer.");
+
+  res = get_config_file_path(&config_file_path);
+  check(res == 0, "Failed to create config file path.");
+
+  res = load_config_file(config_file_path, config_buffer);
+  check(res == 0, "Failed to load %s", config_file_path);
+
+  int or_logic = strcmp(argv[1], "-o") == 0 ? 1 : 0;
+
+  for (int i = 0; i < config_buffer->size; i++) {
+    vc *file_name;
+    vvc_at(config_buffer, i, &file_name);
+
+    process_file(file_name, argv + 1, argc - 1, or_logic);
+  }
+
+  free_vvc_elements(config_buffer);
+  vvc_cleanup(config_buffer);
+  free(config_file_path);
+  return 0;
+error:
+  free_vvc_elements(config_buffer);
+  vvc_cleanup(config_buffer);
+  if (config_file_path) free(config_file_path);
   return 1;
 }
