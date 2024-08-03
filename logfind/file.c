@@ -1,3 +1,6 @@
+#include <stdio.h>
+
+#include "../common/colorprint.h"
 #include "bit_buffer.h"
 #include "file.h"
 #include "kmp.h"
@@ -77,10 +80,36 @@ void free_vvc_elements(vvc *v) {
   }
 }
 
-int process_file(vc *file_name, char **search_args, int search_args_count,
+void color_print(vc *line, bit_buffer *color_mask) {
+  int is_highlight_on = 1;
+  if (is_set(color_mask, 0) == 1) {
+    printf(BRIGHT_RED_ANSI);
+    is_highlight_on = 1;
+  }
+
+  for (int i = 0; i < line->size - 1; i++) {
+    int set_bit = is_set(color_mask, i);
+    if (is_highlight_on == 1 && set_bit == 0) {
+      printf(RESET);
+      is_highlight_on = 0;
+    } else if (is_highlight_on == 0 && set_bit == 1) {
+      printf(BRIGHT_RED_ANSI);
+      is_highlight_on = 1;
+    }
+
+    char ch;
+    vc_at(line, i, &ch);
+    printf("%c", ch);
+  }
+  printf(RESET);
+  printf("\n");
+}
+
+int process_file(vc *file_name, char **search_strings, int search_strings_count,
                  int or_logic) {
   vvc *print_buffer = NULL;
   vbit_buffer *color_mask_buffer = NULL;
+  bit_buffer *matched_buffer = NULL;
 
   FILE *fp = NULL;
   vc *line = NULL;
@@ -95,11 +124,15 @@ int process_file(vc *file_name, char **search_args, int search_args_count,
   fp = fopen(file_name->arr, "r");
   check(fp != NULL, "Could'nt open %s", file_name->arr);
 
-  if (or_logic == 1) {
+  if (or_logic == 0) {
     res = create_vvc(&print_buffer);
     check(res == 0, "Failed to create vvc.");
+
     res = create_vbit_buffer(&color_mask_buffer);
     check(res == 0, "Failed to create vbit_buffer.");
+
+    res = create_bit_buffer(&matched_buffer, search_strings_count);
+    check(res == 0, "Failed to create bit_buffer.");
   }
 
   while (!feof(fp)) {
@@ -117,25 +150,67 @@ int process_file(vc *file_name, char **search_args, int search_args_count,
     res = create_bit_buffer(&color_mask, line->size - 1);
     check(res == 0, "Failed to create bit buffer.");
 
-    for (int i = 0; i < search_args_count; i++) {
-      res = kmp(color_mask, line, search_args[i]);
+    int any_match = 0;
+    for (int i = 0; i < search_strings_count; i++) {
+      res = kmp(color_mask, line, search_strings[i]);
       check(res >= 0, "Failed to do kmp.");
 
       if (res == 1) {
-        printf("%s:%s\n", file_name->arr, line->arr);
+        any_match = 1;
+        if (or_logic == 0) {
+          set_bit(matched_buffer, i);
+        }
       }
     }
 
-    bit_buffer_cleanup(color_mask);
+    if (any_match == 1) {
+      if (or_logic == 0) {
+        vvc_push(print_buffer, line);
+        vbit_buffer_push(color_mask_buffer, color_mask);
+      } else {
+        printf("%s:", file_name->arr);
+        color_print(line, color_mask);
+
+        vc_cleanup(line);
+        bit_buffer_cleanup(color_mask);
+      }
+    } else {
+      vc_cleanup(line);
+      bit_buffer_cleanup(color_mask);
+    }
+
     color_mask = NULL;
-    vc_cleanup(line);
     res = create_vc(&line);
     check(res == 0, "Failed to create vc.");
+  }
+
+  if (or_logic == 0) {
+    int all_matched = 1;
+    for (int i = 0; i < matched_buffer->num_bits; i++) {
+      if (is_set(matched_buffer, i) == 0) {
+        all_matched = 0;
+        break;
+      }
+    }
+
+    if (all_matched == 1) {
+      for (int i = 0; i < print_buffer->size; i++) {
+        vc *curr_line;
+        vvc_at(print_buffer, i, &curr_line);
+
+        bit_buffer *curr_color_mask;
+        vbit_buffer_at(color_mask_buffer, i, &curr_color_mask);
+
+        printf("%s:", file_name->arr);
+        color_print(curr_line, curr_color_mask);
+      }
+    }
   }
 
   if (fp) fclose(fp);
   vc_cleanup(line);
   bit_buffer_cleanup(color_mask);
+  bit_buffer_cleanup(matched_buffer);
 
   free_vvc_elements(print_buffer);
   vvc_cleanup(print_buffer);
@@ -147,6 +222,7 @@ error:
   if (fp) fclose(fp);
   vc_cleanup(line);
   bit_buffer_cleanup(color_mask);
+  bit_buffer_cleanup(matched_buffer);
 
   free_vvc_elements(print_buffer);
   vvc_cleanup(print_buffer);

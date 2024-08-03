@@ -36,6 +36,18 @@ error:
   return -1;
 }
 
+int set_bit(bit_buffer *b, int index) {
+  if (index >= b->num_bits) {
+    sentinel("Index out of bounds.");
+  }
+
+  b->buffer[index / 8] |= (128 >> (index % 8));
+
+  return 0;
+error:
+  return -1;
+}
+
 int set_range(bit_buffer *b, int start, int end) {
   if (start > end || start >= b->num_bits || end >= b->num_bits) {
     sentinel("Index out of bounds.");

@@ -43,6 +43,14 @@ int main(int argc, char *argv[]) {
 
   int or_logic = strcmp(argv[1], "-o") == 0 ? 1 : 0;
 
+  char **search_strings = argv + 1;
+  int search_strings_count = argc - 1;
+
+  if (or_logic == 1) {
+    search_strings++;
+    search_strings_count--;
+  }
+
   for (int i = 0; i < config_buffer->size; i++) {
     vc *file_name;
     vvc_at(config_buffer, i, &file_name);
