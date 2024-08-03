@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
     vc *file_name;
     vvc_at(config_buffer, i, &file_name);
 
-    process_file(file_name, argv + 1, argc - 1, or_logic);
+    process_file(file_name, search_strings, search_strings_count, or_logic);
   }
 
   free_vvc_elements(config_buffer);
