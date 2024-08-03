@@ -23,7 +23,7 @@ error:
 
 int main(int argc, char *argv[]) {
   if (argc < 2) {
-    log_err("USAGE: %s [-o for or logic] [search vcs]", argv[0]);
+    log_err("USAGE: %s [-o for or logic] [search strings]", argv[0]);
     return 1;
   }
 
