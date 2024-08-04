@@ -168,7 +168,9 @@ int process_file(vc *file_name, char **search_strings, int search_strings_count,
         vvc_push(print_buffer, line);
         vbit_buffer_push(color_mask_buffer, color_mask);
       } else {
+        printf(BRIGHT_MAGENTA_ANSI);
         printf("%s:", file_name->arr);
+        printf(RESET);
         color_print(line, color_mask);
 
         vc_cleanup(line);
@@ -201,7 +203,9 @@ int process_file(vc *file_name, char **search_strings, int search_strings_count,
         bit_buffer *curr_color_mask;
         vbit_buffer_at(color_mask_buffer, i, &curr_color_mask);
 
+        printf(BRIGHT_MAGENTA_ANSI);
         printf("%s:", file_name->arr);
+        printf(RESET);
         color_print(curr_line, curr_color_mask);
       }
     }
