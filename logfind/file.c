@@ -1,3 +1,4 @@
+#include <glob.h>
 #include <stdio.h>
 
 #include "../common/colorprint.h"
@@ -31,7 +32,11 @@ int load_config_file(char *file_path, vvc *b) {
   FILE *fp = NULL;
 
   vc *line = NULL;
+  vc *glob_match = NULL;
   int res = 0;
+
+  glob_t globbuf;
+  int glob_index = 0;
 
   fp = fopen(file_path, "r");
   check(fp != NULL, "Failed to open file: %s", file_path);
@@ -39,12 +44,41 @@ int load_config_file(char *file_path, vvc *b) {
   res = create_vc(&line);
   check(res == 0, "Failed to create string.");
 
+  int glob_flags = GLOB_TILDE | GLOB_BRACE | GLOB_ERR;
+
   while (!feof(fp)) {
     res = load_line(fp, line);
     check(res == 0, "Failed to load line.");
 
     if (line->size > 0) {
-      vvc_push(b, line);
+      if (glob_index == 0) {
+        res = glob(line->arr, glob_flags, NULL, &globbuf);
+      } else {
+        res = glob(line->arr, glob_flags | GLOB_APPEND, NULL, &globbuf);
+      }
+
+      if (res == GLOB_NOSPACE) {
+        sentinel();
+      } else if (res == GLOB_ABORTED) {
+        sentinel();
+      }
+
+      for (size_t i = glob_index; i < globbuf.gl_pathc; i++) {
+        if (globbuf.gl_pathv[i][0] == '\0') continue;
+
+        res = create_vc(&glob_match);
+        check(res == 0, "Failed to create string.");
+
+        for (char *chp = globbuf.gl_pathv[i]; *chp != '\0'; chp++) {
+          vc_push(glob_match, *chp);
+        }
+        vc_push(glob_match, '\0');
+
+        vvc_push(b, glob_match);
+      }
+
+      glob_index += globbuf.gl_pathc;
+      vc_cleanup(line);
     } else {
       vc_cleanup(line);
     }
@@ -55,10 +89,12 @@ int load_config_file(char *file_path, vvc *b) {
 
   if (fp) fclose(fp);
   vc_cleanup(line);
+  globfree(&globbuf);
   return 0;
 error:
   if (fp) fclose(fp);
   vc_cleanup(line);
+  globfree(&globbuf);
   return -1;
 }
 
