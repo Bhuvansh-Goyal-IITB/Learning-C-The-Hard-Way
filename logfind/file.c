@@ -1,7 +1,6 @@
 #include <glob.h>
 #include <stdio.h>
 
-#include "../common/colorprint.h"
 #include "bit_buffer.h"
 #include "file.h"
 #include "kmp.h"
