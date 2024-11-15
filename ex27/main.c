@@ -4,11 +4,13 @@
 
 void copy(const char *from, char *to) {
   int i = 0;
-  while ((to[i] = from[i]) != '\0') ++i;
+  while ((to[i] = from[i]) != '\0')
+    ++i;
 }
 
 int safecopy(int len_from, char *from, int len_to, char *to) {
-  assert(from != NULL && to != NULL && "from and to cant be null");
+	assert(from != NULL && to != NULL && "From and To can't be null");
+	
   int max = len_from > len_to - 1 ? len_to - 1 : len_from;
 
   if (len_from < 0 || len_to <= 0) {
