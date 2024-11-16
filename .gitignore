@@ -1,3 +1,4 @@
 .direnv
 *.dat
 **/.test*
+logfind/*.txt
