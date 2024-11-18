@@ -57,9 +57,15 @@ int load_config_file(char *file_path, vvc *b) {
       }
 
       if (res == GLOB_NOSPACE) {
-        sentinel();
+        sentinel("Out of memory");
       } else if (res == GLOB_ABORTED) {
-        sentinel();
+        log_err("Incorrect file path %s", line->arr);
+        vc_cleanup(line);
+
+        res = create_vc(&line);
+        check(res == 0, "Failed to create string.");
+
+        continue;
       }
 
       for (size_t i = glob_index; i < globbuf.gl_pathc; i++) {

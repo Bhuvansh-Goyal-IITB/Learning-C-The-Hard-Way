@@ -1,4 +1,16 @@
-CFLAGS=-Wall -g
+CC=gcc
+INCDIRS=-I.
+CFLAGS=-Wall -g $(OPTS) $(INCDIRS)
 
-main: main.c vector.c file.c bit_buffer.c kmp.c
-	gcc $(CFLAGS) -o main main.c vector.c kmp.c file.c bit_buffer.c
+CFILES=$(wildcard *.c)
+OBJECTS=$(patsubst %.c,%.o,$(CFILES))
+
+TARGET=bin
+
+all: $(TARGET)
+
+$(TARGET): $(OBJECTS)
+	$(CC) -o $@ $^
+
+clean:
+	rm -f *.o $(TARGET)
