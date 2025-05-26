@@ -1,0 +1,2 @@
+CompileFlags:
+  Add: ["-I/home/bhuvansh/lcthw/liblcthw/src", "-I/home/bhuvansh/lcthw/liblcthw/include"]
