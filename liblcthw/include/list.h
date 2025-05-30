@@ -16,22 +16,30 @@ typedef struct List {
 } List;
 
 List* List_create();
+
+// destroy destroys the nodes and clear destroys the data held by the nodes not
+// the nodes themselves
 void List_destroy(List* list);
 void List_clear(List* list);
 void List_clear_destroy(List* list);
 
-#define List_count(A) ((A)->count)
-#define List_first(A) ((A)->first != NULL ? (A)->first->value : NULL)
-#define List_last(A) ((A)->last != NULL ? (A)->last->value : NULL)
+#define List_count(A) ((A) != NULL ? (A)->count : 0)
+#define List_first(A) \
+  ((A) != NULL && (A)->first != NULL ? (A)->first->value : NULL)
+#define List_last(A) \
+  ((A) != NULL && (A)->last != NULL ? (A)->last->value : NULL)
 
-void List_push(List* list, void* value);
+int List_push(List* list, void* value);
 void* List_pop(List* list);
 
-void List_unshift(List* list, void* value);
+// unshift adds an element to the head and shift removes the first element
+int List_unshift(List* list, void* value);
 void* List_shift(List* list);
 
+// removes the given node
 void* List_remove(List* list, ListNode* node);
 
+// macro for making iteration over all the elements easier
 #define LIST_FOREACH(L, S, M, V) for (ListNode* V = L->S; V != NULL; V = V->M)
 
 #endif

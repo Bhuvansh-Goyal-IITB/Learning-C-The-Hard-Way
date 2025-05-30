@@ -7,6 +7,8 @@
 
 #include "debug.h"
 
+static int tests_run = 0;
+
 #define mu_assert(test, message) \
   do {                           \
     if (!(test)) {               \
@@ -23,7 +25,6 @@
   } while (0)
 
 #define RUN_TESTS(name)                      \
-  int tests_run = 0;                         \
   int main(int argc, char *argv[]) {         \
     (void)argc;                              \
     debug("-----RUNNING: %s", argv[0]);      \

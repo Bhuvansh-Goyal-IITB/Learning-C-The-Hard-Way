@@ -1,6 +1,5 @@
 CFLAGS=-g -O2 -Wall -Wextra -Isrc -Iinclude -rdynamic -DNDEBUG $(OPTFLAGS)
-LIBS=-ldl $(OPTLIBS)
-PREFIX?=/usr/local
+LDLIBS=-ldl $(OPTLIBS)
 
 SOURCES=$(wildcard src/**/*.c src/*.c)
 OBJECTS=$(patsubst %.c,%.o,$(SOURCES))
@@ -10,7 +9,7 @@ HEADERS=$(wildcard include/**/*.h include/*.h)
 TEST_SRC=$(wildcard tests/*_tests.c)
 TESTS=$(patsubst %.c,%,$(TEST_SRC))
 
-TARGET=build/libYOUR_LIBRARY.a
+TARGET=build/liblcthw.a
 SO_TARGET=$(patsubst %.a,%.so,$(TARGET))
 
 all: $(TARGET) $(SO_TARGET) tests
@@ -22,14 +21,14 @@ $(TARGET): CFLAGS += -fPIC
 $(TARGET): build $(OBJECTS)
 	ar rcs $@ $(OBJECTS)
 	ranlib $@
-$(SO_TARGET): $(TARGET) $(OBJECTS)
+$(SO_TARGET): $(OBJECTS)
 	$(CC) -shared -o $@ $(OBJECTS)
 
 build:
 	@mkdir -p build
 
 .PHONY: tests
-tests: CFLAGS += $(TARGET)
+tests: LDLIBS += $(TARGET)
 tests: $(TESTS)
 	sh ./tests/runtests.sh
 

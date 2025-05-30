@@ -1,28 +1,51 @@
 #include <debug.h>
 #include <list.h>
 
+#define check_invariant(A)                                             \
+  check((A) != NULL, "list is NULL.");                                 \
+  check((A)->count >= 0, "invalid element count.");                    \
+  if ((A)->count > 0)                                                  \
+    check(List_first(A) != NULL, "first element should not be NULL."); \
+  if ((A)->count == 0)                                                 \
+    check(List_first(A) == NULL && List_last(A) == NULL,               \
+          "first and last elements should be NULL.");
+
 List* List_create() { return calloc(1, sizeof(List)); }
 
 void List_destroy(List* list) {
+  check_invariant(list);
+
   LIST_FOREACH(list, first, next, cur) { free(cur->prev); }
   free(list->last);
   free(list);
+error:
+  return;
 }
 
 void List_clear(List* list) {
+  check_invariant(list);
+
   LIST_FOREACH(list, first, next, cur) { free(cur->value); }
+error:
+  return;
 }
 
 void List_clear_destroy(List* list) {
+  check_invariant(list);
+
   LIST_FOREACH(list, first, next, cur) {
     free(cur->value);
     free(cur->prev);
   }
   free(list->last);
   free(list);
+error:
+  return;
 }
 
-void List_push(List* list, void* value) {
+int List_push(List* list, void* value) {
+  check_invariant(list);
+
   ListNode* node = calloc(1, sizeof(ListNode));
   check_mem(node);
 
@@ -38,6 +61,83 @@ void List_push(List* list, void* value) {
   }
 
   list->count++;
+
+  return 0;
 error:
-  return;
+  return 1;
+}
+
+void* List_pop(List* list) {
+  check_invariant(list);
+
+  ListNode* node = list->last;
+  return node != NULL ? List_remove(list, node) : NULL;
+error:
+  return NULL;
+}
+
+int List_unshift(List* list, void* value) {
+  check_invariant(list);
+
+  ListNode* node = calloc(1, sizeof(ListNode));
+  check_mem(node);
+
+  node->value = value;
+
+  if (list->first == NULL) {
+    list->first = node;
+    list->last = node;
+  } else {
+    node->next = list->first;
+    list->first->prev = node;
+    list->first = node;
+  }
+
+  list->count++;
+
+  return 0;
+error:
+  return 1;
+}
+
+void* List_shift(List* list) {
+  check_invariant(list);
+
+  ListNode* node = list->first;
+  return node != NULL ? List_remove(list, node) : NULL;
+error:
+  return NULL;
+}
+
+void* List_remove(List* list, ListNode* node) {
+  void* result = NULL;
+
+  check_invariant(list);
+
+  check(list->first && list->last, "List is empty");
+  check(node, "node can't be NULL");
+
+  if (node == list->first && node == list->last) {
+    list->first = NULL;
+    list->last = NULL;
+  } else if (node == list->first) {
+    list->first = node->next;
+    check(list->first != NULL,
+          "Invalid list, somehow got a first that is a NULL.");
+    list->first->prev = NULL;
+  } else if (node == list->last) {
+    list->last = node->prev;
+    check(list->last != NULL,
+          "Invalid list, somehow got a last that is a NULL.");
+    list->last->next = NULL;
+  } else {
+    node->next->prev = node->prev;
+    node->prev->next = node->next;
+  }
+
+  list->count--;
+  result = node->value;
+  free(node);
+error:
+  return result;
 }
