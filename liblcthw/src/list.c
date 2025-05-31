@@ -1,5 +1,6 @@
 #include <debug.h>
 #include <list.h>
+#include <stdio.h>
 
 #define check_invariant(A)                                             \
   check((A) != NULL, "list is NULL.");                                 \
@@ -13,34 +14,22 @@
 List* List_create() { return calloc(1, sizeof(List)); }
 
 void List_destroy(List* list) {
-  check_invariant(list);
-
   LIST_FOREACH(list, first, next, cur) { free(cur->prev); }
   free(list->last);
   free(list);
-error:
-  return;
 }
 
 void List_clear(List* list) {
-  check_invariant(list);
-
   LIST_FOREACH(list, first, next, cur) { free(cur->value); }
-error:
-  return;
 }
 
 void List_clear_destroy(List* list) {
-  check_invariant(list);
-
   LIST_FOREACH(list, first, next, cur) {
     free(cur->value);
     free(cur->prev);
   }
   free(list->last);
   free(list);
-error:
-  return;
 }
 
 int List_push(List* list, void* value) {
@@ -140,4 +129,60 @@ void* List_remove(List* list, ListNode* node) {
   free(node);
 error:
   return result;
+}
+
+int List_swap(ListNode* node1, ListNode* node2) {
+  void* tmp = node1->value;
+
+  node1->value = node2->value;
+  node2->value = tmp;
+
+  return 0;
+}
+
+List* List_split(List* list, ListNode* split_node) {
+  List* split_list = List_create();
+
+  check_invariant(list);
+  check(list->count > 1,
+        "There should be more than 1 element to split the list.");
+  check(split_list != NULL, "Failed to create list.");
+
+  int split_list_count = list->count;
+  int node_found = 0;
+  LIST_FOREACH(list, first, next, cur) {
+    if (cur == split_node) {
+      node_found = 1;
+      break;
+    }
+    split_list_count--;
+  }
+
+  check(node_found == 1, "Split node not found in list.");
+
+  split_list->first = split_node;
+  split_list->last = list->last;
+  split_list->count = split_list_count;
+
+  list->last = split_node->prev;
+  list->count -= split_list_count;
+
+  split_node->prev->next = NULL;
+  split_node->prev = NULL;
+
+  return split_list;
+error:
+  if (split_list != NULL) {
+    List_destroy(split_list);
+  }
+  return NULL;
+}
+
+int List_join(List* list1, List* list2) {
+  check_invariant(list1);
+  check_invariant(list2);
+  LIST_FOREACH(list2, first, next, cur) { List_push(list1, cur->value); }
+  return 0;
+error:
+  return 1;
 }

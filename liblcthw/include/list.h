@@ -39,7 +39,12 @@ void* List_shift(List* list);
 // removes the given node
 void* List_remove(List* list, ListNode* node);
 
+int List_swap(ListNode* node1, ListNode* node2);
+List* List_split(List* list, ListNode* split_node);
+int List_join(List* list1, List* list2);
+
 // macro for making iteration over all the elements easier
-#define LIST_FOREACH(L, S, M, V) for (ListNode* V = L->S; V != NULL; V = V->M)
+#define LIST_FOREACH(L, S, M, V) \
+  for (ListNode* V = (L != NULL ? L->S : NULL); V != NULL; V = V->M)
 
 #endif
