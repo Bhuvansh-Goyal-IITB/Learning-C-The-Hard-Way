@@ -3,6 +3,8 @@
 
 #include <stdlib.h>
 
+typedef int (*List_compare)(const void* a, const void* b);
+
 typedef struct ListNode {
   struct ListNode* prev;
   struct ListNode* next;
@@ -17,7 +19,7 @@ typedef struct List {
 
 List* List_create();
 
-// destroy destroys the nodes and clear destroys the data held by the nodes not
+// Destroy destroys the nodes and clear destroys the data held by the nodes not
 // the nodes themselves
 void List_destroy(List* list);
 void List_clear(List* list);
@@ -32,16 +34,29 @@ void List_clear_destroy(List* list);
 int List_push(List* list, void* value);
 void* List_pop(List* list);
 
-// unshift adds an element to the head and shift removes the first element
+// Unshift adds an element to the head and shift removes the first element
 int List_unshift(List* list, void* value);
 void* List_shift(List* list);
 
-// removes the given node
+// Removes the given node
 void* List_remove(List* list, ListNode* node);
 
+// Swaps the data of 2 nodes
 int List_swap(ListNode* node1, ListNode* node2);
+
+// The left half of the split is the ptr list and the returned List* ptr is the
+// right half of the split
 List* List_split(List* list, ListNode* split_node);
+
+// Joins the list2 elements at the end of list1
 int List_join(List* list1, List* list2);
+
+// Tells whether list is sorted or not
+int List_is_sorted(List* list, List_compare cmp);
+
+// Inserts the new value such that the list remains sorted, list must be sorted
+// already to begin with
+int List_insert_sorted(List* list, void* value, List_compare cmp);
 
 // macro for making iteration over all the elements easier
 #define LIST_FOREACH(L, S, M, V) \

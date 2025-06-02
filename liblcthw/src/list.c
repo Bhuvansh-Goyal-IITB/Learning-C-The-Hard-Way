@@ -1,6 +1,5 @@
 #include <debug.h>
 #include <list.h>
-#include <stdio.h>
 
 #define check_invariant(A)                                             \
   check((A) != NULL, "list is NULL.");                                 \
@@ -15,7 +14,7 @@ List* List_create() { return calloc(1, sizeof(List)); }
 
 void List_destroy(List* list) {
   LIST_FOREACH(list, first, next, cur) { free(cur->prev); }
-  free(list->last);
+  if (list != NULL) free(list->last);
   free(list);
 }
 
@@ -28,14 +27,16 @@ void List_clear_destroy(List* list) {
     free(cur->value);
     free(cur->prev);
   }
-  free(list->last);
+  if (list != NULL) free(list->last);
   free(list);
 }
 
 int List_push(List* list, void* value) {
+  ListNode* node = NULL;
+
   check_invariant(list);
 
-  ListNode* node = calloc(1, sizeof(ListNode));
+  node = calloc(1, sizeof(ListNode));
   check_mem(node);
 
   node->value = value;
@@ -53,6 +54,7 @@ int List_push(List* list, void* value) {
 
   return 0;
 error:
+  free(node);
   return 1;
 }
 
@@ -66,9 +68,11 @@ error:
 }
 
 int List_unshift(List* list, void* value) {
+  ListNode* node = NULL;
+
   check_invariant(list);
 
-  ListNode* node = calloc(1, sizeof(ListNode));
+  node = calloc(1, sizeof(ListNode));
   check_mem(node);
 
   node->value = value;
@@ -86,6 +90,7 @@ int List_unshift(List* list, void* value) {
 
   return 0;
 error:
+  free(node);
   return 1;
 }
 
@@ -144,11 +149,11 @@ List* List_split(List* list, ListNode* split_node) {
   List* split_list = List_create();
 
   check_invariant(list);
-  check(list->count > 1,
+  check(List_count(list) > 1,
         "There should be more than 1 element to split the list.");
   check(split_list != NULL, "Failed to create list.");
 
-  int split_list_count = list->count;
+  int split_list_count = List_count(list);
   int node_found = 0;
   LIST_FOREACH(list, first, next, cur) {
     if (cur == split_node) {
@@ -184,5 +189,58 @@ int List_join(List* list1, List* list2) {
   LIST_FOREACH(list2, first, next, cur) { List_push(list1, cur->value); }
   return 0;
 error:
+  return 1;
+}
+
+int List_is_sorted(List* list, List_compare cmp) {
+  LIST_FOREACH(list, first, next, cur) {
+    if (cur->next && cmp(cur->value, cur->next->value) > 0) {
+      debug("%s %s", (char*)cur->value, (char*)cur->next->value);
+      return 0;
+    }
+  }
+
+  return 1;
+}
+
+int List_insert_sorted(List* list, void* value, List_compare cmp) {
+  ListNode* node = NULL;
+
+  check_invariant(list);
+  check(List_is_sorted(list, cmp) == 1, "List is not sorted.");
+
+  ListNode* first_larger_node = NULL;
+  int rc = 0;
+
+  LIST_FOREACH(list, first, next, cur) {
+    if (cmp(cur->value, value) > 0) {
+      first_larger_node = cur;
+      break;
+    }
+  }
+
+  if (first_larger_node == list->first) {
+    rc = List_unshift(list, value);
+    check(rc == 0, "List unshift failed.");
+  } else if (first_larger_node == NULL) {
+    rc = List_push(list, value);
+    check(rc == 0, "List push failed.");
+  } else {
+    node = calloc(1, sizeof(ListNode));
+    check_mem(node);
+
+    node->value = value;
+
+    first_larger_node->prev->next = node;
+    node->next = first_larger_node;
+    node->prev = first_larger_node->prev;
+    first_larger_node->prev = node;
+
+    list->count++;
+  }
+
+  return 0;
+error:
+  free(node);
   return 1;
 }

@@ -2,26 +2,27 @@
 #ifndef __minunit_h__
 #define __minunit_h__
 
+#include <debug.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "debug.h"
-
 static int tests_run = 0;
+static char *error_message = NULL;
 
 #define mu_assert(test, message) \
   do {                           \
     if (!(test)) {               \
       log_err(message);          \
-      return message;            \
+      error_message = message;   \
+      goto error;                \
     }                            \
   } while (0)
 
-#define mu_run_test(test)        \
-  do {                           \
-    char *message = test();      \
-    tests_run++;                 \
-    if (message) return message; \
+#define mu_run_test(test)          \
+  do {                             \
+    test();                        \
+    tests_run++;                   \
+    if (error_message) goto error; \
   } while (0)
 
 #define RUN_TESTS(name)                      \
@@ -29,16 +30,14 @@ static int tests_run = 0;
     (void)argc;                              \
     debug("-----RUNNING: %s", argv[0]);      \
     printf("-----\nRUNNING: %s\n", argv[0]); \
-    char *result = name();                   \
-    if (result != 0) {                       \
-      printf("FAILED: %s\n", result);        \
+    name();                                  \
+    if (error_message != 0) {                \
+      printf("FAILED: %s\n", error_message); \
     } else {                                 \
       printf("ALL TEST PASSED\n");           \
     }                                        \
     printf("Tests run: %d\n", tests_run);    \
-    exit(result != 0);                       \
+    exit(error_message != 0);                \
   }
-
-extern int tests_run;
 
 #endif
