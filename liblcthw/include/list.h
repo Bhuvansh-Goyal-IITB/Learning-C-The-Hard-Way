@@ -17,6 +17,16 @@ typedef struct List {
   ListNode* last;
 } List;
 
+#define check_invariants(A)                               \
+  check((A) != NULL, "list is NULL.");                    \
+  check((A)->count >= 0, "invalid element count.");       \
+  if ((A)->count > 0)                                     \
+    check((A)->first != NULL && (A)->last != NULL,        \
+          "first and last elements should not be NULL."); \
+  if ((A)->count == 0)                                    \
+    check((A)->first == NULL && (A)->last == NULL,        \
+          "first and last elements should be NULL.");
+
 List* List_create();
 
 // Destroy destroys the nodes and clear destroys the data held by the nodes not

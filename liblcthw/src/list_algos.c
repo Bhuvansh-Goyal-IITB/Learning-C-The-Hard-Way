@@ -101,7 +101,7 @@ List* List_merge_sort(List* list, List_compare cmp) {
             check(merge_list != NULL, "Merge list failed.");
 
             rc = List_join(next_iteration, merge_list);
-            check(rc == 0, "List join failed");
+            check(rc == 0, "List join failed.");
 
             List_destroy(merge_list);
 
@@ -119,7 +119,7 @@ List* List_merge_sort(List* list, List_compare cmp) {
         check(merge_list != NULL, "Merge list failed.");
 
         rc = List_join(next_iteration, merge_list);
-        check(rc == 0, "List join failed");
+        check(rc == 0, "List join failed.");
 
         List_destroy(merge_list);
       } else if (left_start != NULL) {

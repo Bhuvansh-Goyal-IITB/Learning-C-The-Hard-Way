@@ -9,13 +9,14 @@
 static int tests_run = 0;
 static char *error_message = NULL;
 
-#define mu_assert(test, message) \
-  do {                           \
-    if (!(test)) {               \
-      log_err(message);          \
-      error_message = message;   \
-      goto error;                \
-    }                            \
+#define mu_assert(test, M, ...)                            \
+  do {                                                     \
+    if (!(test)) {                                         \
+      log_err(M, ##__VA_ARGS__);                           \
+      int rc = asprintf(&error_message, M, ##__VA_ARGS__); \
+      if (rc == -1) error_message = "asprintf failed.";    \
+      goto error;                                          \
+    }                                                      \
   } while (0)
 
 #define mu_run_test(test)          \
@@ -37,7 +38,9 @@ static char *error_message = NULL;
       printf("ALL TEST PASSED\n");           \
     }                                        \
     printf("Tests run: %d\n", tests_run);    \
-    exit(error_message != 0);                \
+    int exit_code = (error_message != 0);    \
+    free(error_message);                     \
+    exit(exit_code);                         \
   }
 
 #endif

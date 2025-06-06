@@ -1,15 +1,6 @@
 #include <debug.h>
 #include <list.h>
 
-#define check_invariant(A)                                             \
-  check((A) != NULL, "list is NULL.");                                 \
-  check((A)->count >= 0, "invalid element count.");                    \
-  if ((A)->count > 0)                                                  \
-    check(List_first(A) != NULL, "first element should not be NULL."); \
-  if ((A)->count == 0)                                                 \
-    check(List_first(A) == NULL && List_last(A) == NULL,               \
-          "first and last elements should be NULL.");
-
 List* List_create() { return calloc(1, sizeof(List)); }
 
 void List_destroy(List* list) {
@@ -34,7 +25,7 @@ void List_clear_destroy(List* list) {
 int List_push(List* list, void* value) {
   ListNode* node = NULL;
 
-  check_invariant(list);
+  check_invariants(list);
 
   node = calloc(1, sizeof(ListNode));
   check_mem(node);
@@ -59,7 +50,7 @@ error:
 }
 
 void* List_pop(List* list) {
-  check_invariant(list);
+  check_invariants(list);
 
   ListNode* node = list->last;
   return node != NULL ? List_remove(list, node) : NULL;
@@ -70,7 +61,7 @@ error:
 int List_unshift(List* list, void* value) {
   ListNode* node = NULL;
 
-  check_invariant(list);
+  check_invariants(list);
 
   node = calloc(1, sizeof(ListNode));
   check_mem(node);
@@ -95,7 +86,7 @@ error:
 }
 
 void* List_shift(List* list) {
-  check_invariant(list);
+  check_invariants(list);
 
   ListNode* node = list->first;
   return node != NULL ? List_remove(list, node) : NULL;
@@ -106,7 +97,7 @@ error:
 void* List_remove(List* list, ListNode* node) {
   void* result = NULL;
 
-  check_invariant(list);
+  check_invariants(list);
 
   check(list->first && list->last, "List is empty");
   check(node, "node can't be NULL");
@@ -148,7 +139,7 @@ int List_swap(ListNode* node1, ListNode* node2) {
 List* List_split(List* list, ListNode* split_node) {
   List* split_list = List_create();
 
-  check_invariant(list);
+  check_invariants(list);
   check(List_count(list) > 1,
         "There should be more than 1 element to split the list.");
   check(split_list != NULL, "Failed to create list.");
@@ -184,8 +175,8 @@ error:
 }
 
 int List_join(List* list1, List* list2) {
-  check_invariant(list1);
-  check_invariant(list2);
+  check_invariants(list1);
+  check_invariants(list2);
   LIST_FOREACH(list2, first, next, cur) { List_push(list1, cur->value); }
   return 0;
 error:
@@ -206,7 +197,7 @@ int List_is_sorted(List* list, List_compare cmp) {
 int List_insert_sorted(List* list, void* value, List_compare cmp) {
   ListNode* node = NULL;
 
-  check_invariant(list);
+  check_invariants(list);
   check(List_is_sorted(list, cmp) == 1, "List is not sorted.");
 
   ListNode* first_larger_node = NULL;
