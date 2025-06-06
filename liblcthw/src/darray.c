@@ -77,7 +77,7 @@ int DArray_push(DArray* array, void* el) {
 
   array->contents[array->size++] = el;
 
-  if (array->size == array->capacity) {
+  if (array->size >= array->capacity) {
     int rc = DArray_expand(array);
     check(rc == 0, "array expand failed.");
   }
