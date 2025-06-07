@@ -7,8 +7,6 @@ DArray* DArray_create(size_t element_size, size_t min_capacity) {
 
   check(min_capacity > 0, "min_capacity should be > 0.");
   array->capacity = array->min_capacity = min_capacity;
-
-  check(element_size > 0, "element_size should be > 0.");
   array->element_size = element_size;
 
   array->contents = calloc(min_capacity, sizeof(void*));
