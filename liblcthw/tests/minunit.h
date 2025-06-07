@@ -3,7 +3,6 @@
 #define __minunit_h__
 
 #include <debug.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 static int tests_run = 0;

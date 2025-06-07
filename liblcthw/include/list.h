@@ -1,6 +1,7 @@
 #ifndef __list_h__
 #define __list_h__
 
+#include <debug.h>
 #include <stdlib.h>
 
 typedef int (*List_compare)(const void* a, const void* b);
@@ -61,9 +62,6 @@ List* List_split(List* list, ListNode* split_node);
 // Joins the list2 elements at the end of list1
 int List_join(List* list1, List* list2);
 
-// Tells whether list is sorted or not
-int List_is_sorted(List* list, List_compare cmp);
-
 // Inserts the new value such that the list remains sorted, list must be sorted
 // already to begin with
 int List_insert_sorted(List* list, void* value, List_compare cmp);
@@ -71,5 +69,21 @@ int List_insert_sorted(List* list, void* value, List_compare cmp);
 // macro for making iteration over all the elements easier
 #define LIST_FOREACH(L, S, M, V) \
   for (ListNode* V = (L != NULL ? L->S : NULL); V != NULL; V = V->M)
+
+// Tells whether list is sorted or not
+static inline int List_is_sorted(List* list, List_compare cmp) {
+  check_invariants(list);
+
+  LIST_FOREACH(list, first, next, cur) {
+    if (cur->next && cmp(cur->value, cur->next->value) > 0) {
+      debug("%s %s", (char*)cur->value, (char*)cur->next->value);
+      return 0;
+    }
+  }
+
+  return 1;
+error:
+  return -1;
+}
 
 #endif

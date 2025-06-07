@@ -1,5 +1,4 @@
 #include <darray.h>
-#include <debug.h>
 
 DArray* DArray_create(size_t element_size, size_t min_capacity) {
   DArray* array = calloc(1, sizeof(DArray));
@@ -49,7 +48,7 @@ int DArray_expand(DArray* array) {
 
   return 0;
 error:
-  return 1;
+  return -1;
 }
 
 int DArray_contract(DArray* array) {
@@ -67,7 +66,7 @@ int DArray_contract(DArray* array) {
 
   return 0;
 error:
-  return 1;
+  return -1;
 }
 
 int DArray_push(DArray* array, void* el) {
@@ -82,7 +81,7 @@ int DArray_push(DArray* array, void* el) {
 
   return 0;
 error:
-  return 1;
+  return -1;
 }
 
 void* DArray_pop(DArray* array) {
@@ -115,7 +114,7 @@ static int DArray_swap(DArray* array, size_t i, size_t j) {
 
   return 0;
 error:
-  return 1;
+  return -1;
 }
 
 int DArray_insert(DArray* array, void* el, size_t i) {
@@ -132,7 +131,7 @@ int DArray_insert(DArray* array, void* el, size_t i) {
 
   return 0;
 error:
-  return 1;
+  return -1;
 }
 
 void* DArray_remove(DArray* array, size_t i) {

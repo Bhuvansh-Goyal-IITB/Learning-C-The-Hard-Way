@@ -4,6 +4,8 @@
 #include <debug.h>
 #include <stdlib.h>
 
+typedef int (*DArray_compare)(const void* a, const void* b);
+
 typedef struct DArray {
   size_t size;
   size_t capacity;
@@ -81,6 +83,19 @@ static inline void* DArray_new(DArray* array) {
   return el;
 error:
   return NULL;
+}
+
+static inline int DArray_is_sorted(DArray* array, DArray_compare cmp) {
+  check_invariants(array);
+  for (size_t i = 0; i < array->size - 1; i++) {
+    if (cmp(array->contents[i], array->contents[i + 1]) > 0) {
+      return 0;
+    }
+  }
+
+  return 1;
+error:
+  return -1;
 }
 
 #endif

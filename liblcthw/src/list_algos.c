@@ -1,4 +1,3 @@
-#include <debug.h>
 #include <list_algos.h>
 
 int List_bubble_sort(List* list, List_compare cmp) {
@@ -16,7 +15,7 @@ int List_bubble_sort(List* list, List_compare cmp) {
   }
   return 0;
 error:
-  return 1;
+  return -1;
 }
 
 static inline List* merge_step(ListNode* left_start, ListNode* right_start,

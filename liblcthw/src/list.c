@@ -1,4 +1,3 @@
-#include <debug.h>
 #include <list.h>
 
 List* List_create() { return calloc(1, sizeof(List)); }
@@ -45,8 +44,7 @@ int List_push(List* list, void* value) {
 
   return 0;
 error:
-  free(node);
-  return 1;
+  return -1;
 }
 
 void* List_pop(List* list) {
@@ -81,8 +79,7 @@ int List_unshift(List* list, void* value) {
 
   return 0;
 error:
-  free(node);
-  return 1;
+  return -1;
 }
 
 void* List_shift(List* list) {
@@ -180,18 +177,7 @@ int List_join(List* list1, List* list2) {
   LIST_FOREACH(list2, first, next, cur) { List_push(list1, cur->value); }
   return 0;
 error:
-  return 1;
-}
-
-int List_is_sorted(List* list, List_compare cmp) {
-  LIST_FOREACH(list, first, next, cur) {
-    if (cur->next && cmp(cur->value, cur->next->value) > 0) {
-      debug("%s %s", (char*)cur->value, (char*)cur->next->value);
-      return 0;
-    }
-  }
-
-  return 1;
+  return -1;
 }
 
 int List_insert_sorted(List* list, void* value, List_compare cmp) {
@@ -233,5 +219,5 @@ int List_insert_sorted(List* list, void* value, List_compare cmp) {
   return 0;
 error:
   free(node);
-  return 1;
+  return -1;
 }

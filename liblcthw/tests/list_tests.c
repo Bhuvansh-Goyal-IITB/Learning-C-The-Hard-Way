@@ -1,6 +1,8 @@
-#include <list.h>
-
+// clang-format off
 #include "minunit.h"
+// clang-format on
+
+#include <list.h>
 
 static List* list = NULL;
 
