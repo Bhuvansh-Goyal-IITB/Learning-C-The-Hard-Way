@@ -13,20 +13,19 @@ typedef struct ListNode {
 } ListNode;
 
 typedef struct List {
-  int count;
+  size_t count;
   ListNode* first;
   ListNode* last;
 } List;
 
-#define check_invariants(A)                               \
-  check((A) != NULL, "list is NULL.");                    \
-  check((A)->count >= 0, "invalid element count.");       \
-  if ((A)->count > 0)                                     \
-    check((A)->first != NULL && (A)->last != NULL,        \
-          "first and last elements should not be NULL."); \
-  if ((A)->count == 0)                                    \
-    check((A)->first == NULL && (A)->last == NULL,        \
-          "first and last elements should be NULL.");
+#define check_invariants(A)                                      \
+  check((A) != NULL, "List is NULL.");                           \
+  if ((A)->count > 0)                                            \
+    check((A)->first != NULL && (A)->last != NULL,               \
+          "first or last element is NULL in a non empty List."); \
+  if ((A)->count == 0)                                           \
+    check((A)->first == NULL && (A)->last == NULL,               \
+          "first or last element is not NULL in an empty List.");
 
 List* List_create();
 
@@ -75,10 +74,7 @@ static inline int List_is_sorted(List* list, List_compare cmp) {
   check_invariants(list);
 
   LIST_FOREACH(list, first, next, cur) {
-    if (cur->next && cmp(cur->value, cur->next->value) > 0) {
-      debug("%s %s", (char*)cur->value, (char*)cur->next->value);
-      return 0;
-    }
+    if (cur->next && cmp(cur->value, cur->next->value) > 0) return 0;
   }
 
   return 1;

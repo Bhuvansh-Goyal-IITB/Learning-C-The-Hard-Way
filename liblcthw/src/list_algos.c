@@ -1,7 +1,7 @@
 #include <list_algos.h>
 
 int List_bubble_sort(List* list, List_compare cmp) {
-  check(list != NULL, "List is NULL");
+  check(list != NULL, "List is NULL.");
 
   for (int i = list->count - 1; i > 0; i--) {
     ListNode* cur = list->first;
@@ -21,7 +21,7 @@ error:
 static inline List* merge_step(ListNode* left_start, ListNode* right_start,
                                int width, List_compare cmp) {
   List* result = List_create();
-  check(result != NULL, "List create failed.");
+  check(result != NULL, "failed to create List.");
 
   int left_count = 0;
   int right_count = 0;
@@ -32,12 +32,12 @@ static inline List* merge_step(ListNode* left_start, ListNode* right_start,
          right_count < width) {
     if (cmp(left_start->value, right_start->value) > 0) {
       rc = List_push(result, right_start->value);
-      check(rc == 0, "List push failed");
+      check(rc == 0, "List push failed.");
       right_start = right_start->next;
       right_count++;
     } else {
       rc = List_push(result, left_start->value);
-      check(rc == 0, "List push failed");
+      check(rc == 0, "List push failed.");
       left_start = left_start->next;
       left_count++;
     }
@@ -45,14 +45,14 @@ static inline List* merge_step(ListNode* left_start, ListNode* right_start,
 
   while (left_start != NULL && left_count < width) {
     rc = List_push(result, left_start->value);
-    check(rc == 0, "List push failed");
+    check(rc == 0, "List push failed.");
     left_start = left_start->next;
     left_count++;
   }
 
   while (right_start != NULL && right_count < width) {
     rc = List_push(result, right_start->value);
-    check(rc == 0, "List push failed");
+    check(rc == 0, "List push failed.");
     right_start = right_start->next;
     right_count++;
   }
@@ -65,12 +65,14 @@ error:
 
 List* List_merge_sort(List* list, List_compare cmp) {
   List* current_iteration = list;
-  List* next_iteration = List_create();
+  List* next_iteration = NULL;
 
   List* merge_list = NULL;
 
-  check(next_iteration != NULL, "List creation failed.");
-  check(list != NULL, "List is NULL.");
+  check_invariants(list);
+
+  next_iteration = List_create();
+  check(next_iteration != NULL, "failed to create List.");
 
   if (List_count(list) == 0) {
     return next_iteration;
@@ -80,24 +82,24 @@ List* List_merge_sort(List* list, List_compare cmp) {
 
   if (List_count(list) == 1) {
     rc = List_push(next_iteration, List_first(list));
-    check(rc == 0, "List push failed");
+    check(rc == 0, "List push failed.");
   } else if (List_count(list) != 0) {
-    int width = 1;
+    size_t width = 1;
     for (; width < List_count(list); width *= 2) {
       ListNode* left_start = NULL;
       ListNode* right_start = NULL;
 
-      int length = 0;
+      size_t length = 0;
 
       LIST_FOREACH(current_iteration, first, next, cur) {
-        if (length == 2 * width) {
+        if (width == length / 2) {
           length = 0;
         }
 
         if (length == 0) {
           if (right_start != NULL) {
             merge_list = merge_step(left_start, right_start, width, cmp);
-            check(merge_list != NULL, "Merge list failed.");
+            check(merge_list != NULL, "merge_list failed.");
 
             rc = List_join(next_iteration, merge_list);
             check(rc == 0, "List join failed.");
@@ -115,7 +117,7 @@ List* List_merge_sort(List* list, List_compare cmp) {
 
       if (right_start != NULL) {
         merge_list = merge_step(left_start, right_start, width, cmp);
-        check(merge_list != NULL, "Merge list failed.");
+        check(merge_list != NULL, "merge_list failed.");
 
         rc = List_join(next_iteration, merge_list);
         check(rc == 0, "List join failed.");
@@ -124,7 +126,7 @@ List* List_merge_sort(List* list, List_compare cmp) {
       } else if (left_start != NULL) {
         while (left_start != NULL) {
           rc = List_push(next_iteration, left_start->value);
-          check(rc == 0, "List push failed");
+          check(rc == 0, "List push failed.");
           left_start = left_start->next;
         }
       }
@@ -132,7 +134,7 @@ List* List_merge_sort(List* list, List_compare cmp) {
       if (current_iteration != list) List_destroy(current_iteration);
       current_iteration = next_iteration;
       next_iteration = List_create();
-      check(next_iteration != NULL, "List creation failed.");
+      check(next_iteration != NULL, "failed to create List.");
     }
   }
 

@@ -4,7 +4,8 @@ DArray* DArray_create(size_t element_size, size_t min_capacity) {
   DArray* array = calloc(1, sizeof(DArray));
   check_mem(array);
 
-  check(min_capacity > 0, "min_capacity should be > 0.");
+  check(min_capacity > 0,
+        "invalid DArray min_capacity, expected: > 0, got: %lu.", min_capacity);
   array->capacity = array->min_capacity = min_capacity;
   array->element_size = element_size;
 
@@ -76,7 +77,7 @@ int DArray_push(DArray* array, void* el) {
 
   if (array->size >= array->capacity) {
     int rc = DArray_expand(array);
-    check(rc == 0, "array expand failed.");
+    check(rc == 0, "DArray expand failed.");
   }
 
   return 0;
@@ -94,7 +95,7 @@ void* DArray_pop(DArray* array) {
 
     if (array->size <= array->capacity / 4) {
       int rc = DArray_contract(array);
-      check(rc == 0, "array contract failed.");
+      check(rc == 0, "DArray contract failed.");
     }
   }
 
@@ -103,30 +104,23 @@ error:
   return NULL;
 }
 
-static int DArray_swap(DArray* array, size_t i, size_t j) {
-  check(i < array->size && j < array->size, "index out of bounds.");
-
-  if (i == j) return 0;
-
+static inline void DArray_swap(DArray* array, size_t i, size_t j) {
+  if (i == j) return;
   void* tmp = array->contents[i];
   array->contents[i] = array->contents[j];
   array->contents[j] = tmp;
-
-  return 0;
-error:
-  return -1;
 }
 
 int DArray_insert(DArray* array, void* el, size_t i) {
   check_invariants(array);
-  check(i <= array->size, "i should be less than or equal to array size.");
+  check(i <= array->size, "invalid index, expected: <= %lu (size), got: %lu.",
+        array->size, i);
 
   int rc = DArray_push(array, el);
-  check(rc == 0, "array push failed.");
+  check(rc == 0, "DArray push failed.");
 
   for (size_t n = 0, k = array->size - 1; n < array->size - 1 - i; n++, k--) {
-    rc = DArray_swap(array, k, k - 1);
-    check(rc == 0, "array swap failed.");
+    DArray_swap(array, k, k - 1);
   }
 
   return 0;
@@ -136,17 +130,16 @@ error:
 
 void* DArray_remove(DArray* array, size_t i) {
   check_invariants(array);
-  check(i < array->size, "i should be less than array size.");
+  check(i < array->size, "invalid index, expected: < %lu (size), got: %lu.",
+        array->size, i);
 
-  int rc = DArray_swap(array, i, array->size - 1);
-  check(rc == 0, "array swap failed.");
+  DArray_swap(array, i, array->size - 1);
 
   void* el = DArray_pop(array);
-  check(el != NULL, "array pop failed.");
+  check(el != NULL, "DArray pop failed.");
 
   for (size_t n = 0, k = i; n < array->size - 1 - i; n++, k++) {
-    rc = DArray_swap(array, k, k + 1);
-    check(rc == 0, "array swap failed.");
+    DArray_swap(array, k, k + 1);
   }
 
   return el;

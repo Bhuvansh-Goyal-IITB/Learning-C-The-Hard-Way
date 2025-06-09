@@ -96,21 +96,22 @@ void* List_remove(List* list, ListNode* node) {
 
   check_invariants(list);
 
-  check(list->first && list->last, "List is empty");
-  check(node, "node can't be NULL");
+  check(list->first != NULL && list->last != NULL,
+        "List is empty (cannot remove from empty List).");
+  check(node != NULL, "node is NULL.");
 
   if (node == list->first && node == list->last) {
     list->first = NULL;
     list->last = NULL;
   } else if (node == list->first) {
+    check(node->next != NULL,
+          "invalid node, expected node to have a next element.");
     list->first = node->next;
-    check(list->first != NULL,
-          "Invalid list, somehow got a first that is a NULL.");
     list->first->prev = NULL;
   } else if (node == list->last) {
+    check(node->prev != NULL,
+          "invalid node, expected node to have a prev element.");
     list->last = node->prev;
-    check(list->last != NULL,
-          "Invalid list, somehow got a last that is a NULL.");
     list->last->next = NULL;
   } else {
     node->next->prev = node->prev;
@@ -134,14 +135,17 @@ int List_swap(ListNode* node1, ListNode* node2) {
 }
 
 List* List_split(List* list, ListNode* split_node) {
-  List* split_list = List_create();
+  List* split_list = NULL;
 
   check_invariants(list);
   check(List_count(list) > 1,
-        "There should be more than 1 element to split the list.");
-  check(split_list != NULL, "Failed to create list.");
+        "there should be more than 1 element to split the List (count = %lu).",
+        List_count(list));
 
-  int split_list_count = List_count(list);
+  split_list = List_create();
+  check(split_list != NULL, "failed to create List.");
+
+  size_t split_list_count = List_count(list);
   int node_found = 0;
   LIST_FOREACH(list, first, next, cur) {
     if (cur == split_node) {
@@ -151,7 +155,7 @@ List* List_split(List* list, ListNode* split_node) {
     split_list_count--;
   }
 
-  check(node_found == 1, "Split node not found in list.");
+  check(node_found == 1, "split_node not found in List.");
 
   split_list->first = split_node;
   split_list->last = list->last;
@@ -165,9 +169,7 @@ List* List_split(List* list, ListNode* split_node) {
 
   return split_list;
 error:
-  if (split_list != NULL) {
-    List_destroy(split_list);
-  }
+  List_destroy(split_list);
   return NULL;
 }
 
@@ -184,7 +186,7 @@ int List_insert_sorted(List* list, void* value, List_compare cmp) {
   ListNode* node = NULL;
 
   check_invariants(list);
-  check(List_is_sorted(list, cmp) == 1, "List is not sorted.");
+  check(List_is_sorted(list, cmp) == 1, "List is not sorted before insertion.");
 
   ListNode* first_larger_node = NULL;
   int rc = 0;

@@ -12,7 +12,7 @@ DArray* create_words() {
 
   for (int i = 0; i < 5; i++) {
     int rc = DArray_push(result, words[i]);
-    check(rc == 0, "array push failed.");
+    check(rc == 0, "DArray push failed.");
   }
 
   return result;
@@ -23,19 +23,18 @@ error:
 
 void run_sort_test(int (*func)(DArray*, DArray_compare), const char* name) {
   DArray* words = create_words();
-  mu_assert(words != NULL, "failed to create words array.");
+  mu_assert(words != NULL, "failed to create DArray.");
   mu_assert(DArray_is_sorted(words, (DArray_compare)strcmp) == 0,
-            "words shouldn't be sorted at the start.");
+            "DArray is already sorted before sorting test.");
 
-  debug("--- Testing %s sorting algorithm", name);
+  debug("--- Testing %s sorting algorithm.", name);
   int rc = func(words, (DArray_compare)testcmp);
-  mu_assert(rc == 0, "sort failed.");
+  mu_assert(rc == 0, "DArray sort failed.");
   mu_assert(DArray_is_sorted(words, (DArray_compare)strcmp) == 1,
-            "array is not sorted after %s", name);
+            "DArray is not sorted after %s.", name);
 
 error:
   DArray_destroy(words);
-  return;
 }
 
 void test_qsort() { run_sort_test(DArray_qsort, "qsort"); }
