@@ -99,8 +99,10 @@ int RadixMap_add(RadixMap* map, uint32_t key, uint32_t value) {
   RMElement el = {.data.key = key, .data.value = value};
   map->contents[map->end++] = el;
 
-  int rc = RadixMap_sort(map);
-  check(rc == 0, "RadixMap sort failed.");
+  if (map->end > 1) {
+    int rc = RadixMap_sort(map);
+    check(rc == 0, "RadixMap sort failed.");
+  }
 
   return 0;
 error:
